@@ -1,9 +1,26 @@
 import importlib.util
 import subprocess
 import sys
+import types
 from pathlib import Path
 
 import pytest
+
+
+@pytest.fixture(autouse=True)
+def hermes_provider_contract(monkeypatch):
+    """Provide the minimal Hermes contract used when loading the plugin."""
+
+    class ProviderProfile:
+        def __init__(self, **settings):
+            self.__dict__.update(settings)
+
+    providers = types.ModuleType("providers")
+    providers.register_provider = lambda profile: None
+    providers_base = types.ModuleType("providers.base")
+    providers_base.ProviderProfile = ProviderProfile
+    monkeypatch.setitem(sys.modules, "providers", providers)
+    monkeypatch.setitem(sys.modules, "providers.base", providers_base)
 
 
 def test_plugin_registers_and_parses_catalog(monkeypatch):

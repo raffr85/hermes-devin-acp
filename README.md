@@ -66,7 +66,7 @@ export HERMES_DEVIN_ACP_ARGS='acp'
 
 Set `HERMES_HOME` if Hermes uses a non-default data directory. To install a
 specific provider release through the remote installer, set
-`HERMES_DEVIN_ACP_VERSION`, for example `v0.1.1`.
+`HERMES_DEVIN_ACP_VERSION`, for example `v0.1.2`.
 
 ## Update and uninstall
 
