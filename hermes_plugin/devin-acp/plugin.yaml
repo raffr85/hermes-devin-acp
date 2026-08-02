@@ -1,6 +1,6 @@
 name: hermes-devin-acp
 kind: model-provider
-version: 0.1.3
+version: 0.1.4
 description: Use a Devin subscription as a Hermes model provider via ACP
 author: Rafael Affonso and contributors
 license: MIT

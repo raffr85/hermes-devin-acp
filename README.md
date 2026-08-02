@@ -18,7 +18,7 @@ Then install the official Devin CLI, authenticate, and install this provider:
 ```bash
 curl -fsSL https://cli.devin.ai/install.sh | bash
 devin auth login
-curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.1.3/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.1.4/install.sh | bash
 ```
 
 Restart Hermes, run `/model`, and select **Devin Subscription**.
@@ -52,7 +52,9 @@ directly:
 ```
 
 The catalog is discovered dynamically with `devin models list`, so available
-models can vary by account and over time.
+models can vary by account and over time. Hermes starts each ACP session with
+`devin acp --model <selected-model>`, binding the session to the model selected
+in Hermes rather than passing it as a prompt hint.
 
 ## Configuration
 
@@ -66,14 +68,14 @@ export HERMES_DEVIN_ACP_ARGS='acp'
 
 Set `HERMES_HOME` if Hermes uses a non-default data directory. To install a
 specific provider release through the remote installer, set
-`HERMES_DEVIN_ACP_VERSION`, for example `v0.1.3`.
+`HERMES_DEVIN_ACP_VERSION`, for example `v0.1.4`.
 
 ## Update and uninstall
 
 Run the install command again to update. Remove only this provider with:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.1.3/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.1.4/uninstall.sh | bash
 ```
 
 ## Troubleshooting

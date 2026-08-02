@@ -61,6 +61,7 @@ devin_acp = DevinACPProfile(
     external_command_env="HERMES_DEVIN_ACP_COMMAND",
     external_args_env="HERMES_DEVIN_ACP_ARGS",
     external_auth_args=("auth", "status"),
+    external_model_arg="--model",
     fallback_models=("sonnet", "opus", "gpt", "gemini", "swe"),
 )
 

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repository="raffr85/hermes-devin-acp"
-version="${HERMES_DEVIN_ACP_VERSION:-v0.1.3}"
+version="${HERMES_DEVIN_ACP_VERSION:-v0.1.4}"
 hermes_root="${HERMES_HOME:-$HOME/.hermes}"
 plugin_parent="$hermes_root/plugins/model-providers"
 plugin_target="$plugin_parent/devin-acp"

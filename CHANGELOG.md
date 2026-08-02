@@ -3,6 +3,15 @@
 All notable changes to this project are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## [0.1.4] - 2026-08-02
+
+### Fixed
+
+- Bind the model selected in Hermes to each Devin ACP process with
+  `devin acp --model <selected-model>`.
+- Use the provider-neutral external ACP client contract so Hermes can identify
+  the integration as Devin instead of Copilot.
+
 ## [0.1.3] - 2026-08-02
 
 ### Changed
@@ -33,6 +42,7 @@ All notable changes to this project are documented here. This project follows
 - Installer, uninstaller, tests, CI, release automation, and OSS community
   documentation.
 
+[0.1.4]: https://github.com/raffr85/hermes-devin-acp/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/raffr85/hermes-devin-acp/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/raffr85/hermes-devin-acp/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/raffr85/hermes-devin-acp/compare/v0.1.0...v0.1.1

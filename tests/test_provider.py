@@ -41,6 +41,8 @@ def test_plugin_registers_and_parses_catalog(monkeypatch):
         "claude-sonnet-high",
         "gpt-5-6-terra-medium",
     ]
+    assert module.devin_acp.display_name == "Devin Subscription"
+    assert module.devin_acp.external_model_arg == "--model"
 
 
 @pytest.mark.parametrize(
