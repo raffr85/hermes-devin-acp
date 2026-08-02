@@ -1,6 +1,9 @@
 from pathlib import Path
 import importlib.util
+import subprocess
 import sys
+
+import pytest
 
 
 def test_plugin_registers_and_parses_catalog(monkeypatch):
@@ -21,3 +24,24 @@ def test_plugin_registers_and_parses_catalog(monkeypatch):
         "claude-sonnet-high",
         "gpt-5-6-terra-medium",
     ]
+
+
+@pytest.mark.parametrize(
+    ("which_result", "run_result"),
+    [
+        (None, None),
+        ("/usr/bin/devin", subprocess.TimeoutExpired("devin", 8)),
+    ],
+)
+def test_catalog_failure_returns_none(monkeypatch, which_result, run_result):
+    plugin = Path(__file__).parents[1] / "hermes_plugin" / "devin-acp" / "__init__.py"
+    spec = importlib.util.spec_from_file_location("test_devin_acp_failures", plugin)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    monkeypatch.setattr(module.shutil, "which", lambda _: which_result)
+    if isinstance(run_result, Exception):
+        monkeypatch.setattr(module.subprocess, "run", lambda *a, **kw: (_ for _ in ()).throw(run_result))
+
+    assert module.devin_acp.fetch_models() is None
