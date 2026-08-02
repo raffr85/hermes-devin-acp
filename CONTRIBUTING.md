@@ -8,10 +8,15 @@ Fork the repository, create a focused branch, and run the test suite before
 opening a pull request:
 
 ```bash
-python -m pip install pytest
+python -m pip install pytest ruff
+ruff check .
 pytest -q
 bash -n install.sh uninstall.sh
+shellcheck install.sh uninstall.sh
 ```
+
+ShellCheck is installed separately through your operating system's package
+manager.
 
 Keep changes small, add tests for behavior changes, and update the README when
 the user experience changes. Pull requests must not include credentials, Devin
