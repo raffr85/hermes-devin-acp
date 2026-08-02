@@ -6,7 +6,10 @@ version="${HERMES_DEVIN_ACP_VERSION:-main}"
 hermes_root="${HERMES_HOME:-$HOME/.hermes}"
 plugin_parent="$hermes_root/plugins/model-providers"
 plugin_target="$plugin_parent/devin-acp"
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]:-.}")" 2>/dev/null && pwd || true)"
+script_dir=""
+if script_dir="$(cd "$(dirname "${BASH_SOURCE[0]:-.}")" 2>/dev/null && pwd)"; then
+  :
+fi
 local_source="$script_dir/hermes_plugin/devin-acp"
 profile_contract="$hermes_root/hermes-agent/providers/base.py"
 staging=""

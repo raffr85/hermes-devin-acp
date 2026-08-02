@@ -9,7 +9,6 @@ import subprocess
 from providers import register_provider
 from providers.base import ProviderProfile
 
-
 _MODEL_LINE = re.compile(r"^\s{2}([^\s]+)\s{2,}\S")
 
 
