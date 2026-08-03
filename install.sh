@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repository="raffr85/hermes-devin-acp"
-version="${HERMES_DEVIN_ACP_VERSION:-v0.1.4}"
+version="${HERMES_DEVIN_ACP_VERSION:-v0.1.5}"
 hermes_root="${HERMES_HOME:-$HOME/.hermes}"
 plugin_parent="$hermes_root/plugins/model-providers"
 plugin_target="$plugin_parent/devin-acp"
@@ -36,20 +36,23 @@ devin auth status >/dev/null 2>&1 || fail "Devin CLI is not authenticated. Run: 
 mkdir -p "$plugin_parent"
 staging="$(mktemp -d "$plugin_parent/.devin-acp.XXXXXX")"
 
-if [[ -f "$local_source/__init__.py" && -f "$local_source/plugin.yaml" ]]; then
-  cp "$local_source/__init__.py" "$local_source/plugin.yaml" "$staging/"
+if [[ -f "$local_source/__init__.py" && -f "$local_source/plugin.yaml" && -f "$local_source/install_compat.py" ]]; then
+  cp "$local_source/__init__.py" "$local_source/plugin.yaml" "$local_source/install_compat.py" "$staging/"
 else
   command -v curl >/dev/null 2>&1 || fail "curl is required for remote installation"
   base_url="https://raw.githubusercontent.com/$repository/$version/hermes_plugin/devin-acp"
   curl --fail --silent --show-error --location "$base_url/__init__.py" --output "$staging/__init__.py"
   curl --fail --silent --show-error --location "$base_url/plugin.yaml" --output "$staging/plugin.yaml"
+  curl --fail --silent --show-error --location "$base_url/install_compat.py" --output "$staging/install_compat.py"
 fi
 
-[[ -s "$staging/__init__.py" && -s "$staging/plugin.yaml" ]] || fail "Downloaded plugin files are incomplete"
+[[ -s "$staging/__init__.py" && -s "$staging/plugin.yaml" && -s "$staging/install_compat.py" ]] || fail "Downloaded plugin files are incomplete"
 
 rm -rf -- "$plugin_target"
 mv "$staging" "$plugin_target"
 staging=""
+
+python3 "$plugin_target/install_compat.py" "$hermes_root" || fail "Hermes compatibility setup failed"
 
 printf 'Installed Devin Subscription provider at %s\n' "$plugin_target"
 printf 'Restart Hermes and run /model.\n'
