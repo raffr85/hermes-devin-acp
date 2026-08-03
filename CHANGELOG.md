@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.5 - 2026-08-03
+
+- Make the installer detect and repair affected Hermes provider resolvers.
+- Keep installation idempotent and avoid requiring manual `config.yaml` edits.
+- Validate exact external ACP provider selection through regression tests.
+
 All notable changes to this project are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 

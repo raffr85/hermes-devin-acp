@@ -7,6 +7,40 @@ from pathlib import Path
 import pytest
 
 
+def _load_compat_module():
+    script = Path(__file__).parents[1] / "hermes_plugin" / "devin-acp" / "install_compat.py"
+    spec = importlib.util.spec_from_file_location("test_devin_acp_compat", script)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_compat_patch_is_idempotent():
+    module = _load_compat_module()
+    source = """def resolve_provider_full(name):
+    raw = name
+    # 0.5 Exact Hermes provider IDs must win over LOSSY alias collapsing.
+    return None
+"""
+    patched, changed = module.patch_source(source)
+    patched_again, changed_again = module.patch_source(patched)
+    assert changed is True
+    assert "_AUTH_PROVIDER_REGISTRY.get(raw)" in patched
+    assert changed_again is False
+    assert patched_again == patched
+
+
+def test_compat_patch_leaves_fixed_hermes_untouched():
+    module = _load_compat_module()
+    source = '''def resolve_provider_full(name):
+    raw = name
+    _plugin_config = _AUTH_PROVIDER_REGISTRY.get(raw)
+    return ProviderDef(auth_type="external_process")
+'''
+    assert module.patch_source(source) == (source, False)
+
+
 @pytest.fixture(autouse=True)
 def hermes_provider_contract(monkeypatch):
     """Provide the minimal Hermes contract used when loading the plugin."""

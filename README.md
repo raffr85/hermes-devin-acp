@@ -18,7 +18,7 @@ Then install the official Devin CLI, authenticate, and install this provider:
 ```bash
 curl -fsSL https://cli.devin.ai/install.sh | bash
 devin auth login
-curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.1.4/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.1.5/install.sh | bash
 ```
 
 Restart Hermes, run `/model`, and select **Devin Subscription**.
@@ -40,7 +40,11 @@ cd hermes-devin-acp
 - an authenticated Devin account (`devin auth status`)
 
 The installer fails with an actionable message when a requirement is missing.
-It writes only to `${HERMES_HOME:-$HOME/.hermes}/plugins/model-providers/devin-acp`.
+It installs the provider under
+`${HERMES_HOME:-$HOME/.hermes}/plugins/model-providers/devin-acp` and verifies
+Hermes' external-provider resolver. On affected Hermes versions it applies the
+minimal compatibility fix automatically; versions that already contain the
+upstream fix are left untouched.
 
 ## Usage
 
@@ -68,14 +72,14 @@ export HERMES_DEVIN_ACP_ARGS='acp'
 
 Set `HERMES_HOME` if Hermes uses a non-default data directory. To install a
 specific provider release through the remote installer, set
-`HERMES_DEVIN_ACP_VERSION`, for example `v0.1.4`.
+`HERMES_DEVIN_ACP_VERSION`, for example `v0.1.5`.
 
 ## Update and uninstall
 
 Run the install command again to update. Remove only this provider with:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.1.4/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.1.5/uninstall.sh | bash
 ```
 
 ## Troubleshooting
