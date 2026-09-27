@@ -17,7 +17,7 @@ contract that never shipped in Hermes and fail to load on every published versio
   only binds `--model` per request through thread-local state.
 - Read the model catalog from `devin models list --format json`, keeping the
   plain-text listing and the built-in list as fallbacks.
-- Pin CI to Python 3.11+ (Hermes' minimum) and add an integration job that loads
+- Extend CI to Python 3.10–3.13 and add an integration job that loads
   the plugin through a real Hermes checkout, pinned to the supported release.
 
 ### Fixed
