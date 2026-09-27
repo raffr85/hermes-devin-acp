@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ['3.10', '3.12', '3.13']
+        python-version: ['3.11', '3.12', '3.13']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -26,6 +26,40 @@ jobs:
       - run: ruff check .
       - run: pytest -q
       - run: bash -n install.sh uninstall.sh
+
+  hermes-integration:
+    # Loads the plugin through a real Hermes Agent checkout: the pinned release is the
+    # supported minimum; `main` is advisory and only flags upcoming contract drift.
+    strategy:
+      fail-fast: false
+      matrix:
+        hermes-ref: [v2026.9.24, main]
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.hermes-ref == 'main' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: NousResearch/hermes-agent
+          ref: ${{ matrix.hermes-ref }}
+          path: hermes-agent
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest "openai==2.24.0" "ruamel.yaml==0.18.17" pyyaml
+      - run: pytest -q tests/test_hermes_integration.py
+        env:
+          HERMES_AGENT_ROOT: ${{ github.workspace }}/hermes-agent
+          HERMES_DEVIN_ACP_REQUIRE_HERMES: '1'
+      - name: install.sh against the real checkout
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          ln -s "$GITHUB_WORKSPACE/tests/fake_devin.py" "$RUNNER_TEMP/bin/devin"
+          HERMES_HOME="$RUNNER_TEMP/hermes-home" HERMES_AGENT_ROOT="$GITHUB_WORKSPACE/hermes-agent" \
+            PATH="$RUNNER_TEMP/bin:$PATH" bash install.sh
+          test -f "$RUNNER_TEMP/hermes-home/plugins/model-providers/devin-acp/__init__.py"
+          HERMES_HOME="$RUNNER_TEMP/hermes-home" bash uninstall.sh
+          test ! -e "$RUNNER_TEMP/hermes-home/plugins/model-providers/devin-acp"
 
   shellcheck:
     runs-on: ubuntu-latest

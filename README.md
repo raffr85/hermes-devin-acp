@@ -12,13 +12,13 @@ the official Devin CLI over ACP, keeps authentication in the CLI, and appears as
 
 ## Quick start
 
-You need a recent Hermes Agent installation with external ACP provider support.
-Then install the official Devin CLI, authenticate, and install this provider:
+You need Hermes Agent v2026.9.24 or newer (`hermes update`). Then install the
+official Devin CLI, authenticate, and install this provider:
 
 ```bash
 curl -fsSL https://cli.devin.ai/install.sh | bash
 devin auth login
-curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.1.5/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.2.0/install.sh | bash
 ```
 
 Restart Hermes, run `/model`, and select **Devin Subscription**.
@@ -35,16 +35,18 @@ cd hermes-devin-acp
 
 - macOS or Linux
 - `bash` and, for the one-line install, `curl`
-- Hermes Agent with the external ACP `ProviderProfile` contract
+- Hermes Agent >= v2026.9.24 (the first release that loads `external_process`
+  provider plugins from `$HERMES_HOME/plugins`)
 - the official `devin` CLI in `PATH`
-- an authenticated Devin account (`devin auth status`)
+- an authenticated Devin account (`devin auth login`)
 
-The installer fails with an actionable message when a requirement is missing.
-It installs the provider under
-`${HERMES_HOME:-$HOME/.hermes}/plugins/model-providers/devin-acp` and verifies
-Hermes' external-provider resolver. On affected Hermes versions it applies the
-minimal compatibility fix automatically; versions that already contain the
-upstream fix are left untouched.
+The installer copies two files to
+`${HERMES_HOME:-$HOME/.hermes}/plugins/model-providers/devin-acp` and never
+modifies Hermes itself. It fails with an actionable message when the Devin CLI
+is missing or the Hermes checkout at `${HERMES_AGENT_ROOT:-$HERMES_HOME/hermes-agent}`
+predates the provider contract, and only warns when the CLI is installed but
+not logged in (`devin auth status` exits 0 either way; the installer reads its
+output). Re-running it updates the plugin in place.
 
 ## Usage
 
@@ -55,10 +57,12 @@ directly:
 /model gpt-5-6-terra-medium --provider devin-acp
 ```
 
-The catalog is discovered dynamically with `devin models list`, so available
-models can vary by account and over time. Hermes starts each ACP session with
-`devin acp --model <selected-model>`, binding the session to the model selected
-in Hermes rather than passing it as a prompt hint.
+The catalog comes from `devin models list --format json` (falling back to the
+plain-text listing, then to a small built-in list), so available models vary by
+account and over time. Hermes starts `devin acp --model <selected-model>`,
+binding the ACP session to the model selected in Hermes rather than passing it
+as a prompt hint. Selecting the bare `devin-acp` entry lets the CLI pick its
+default model.
 
 ## Configuration
 
@@ -66,20 +70,22 @@ The defaults work for standard installations. These optional variables override
 them:
 
 ```bash
-export HERMES_DEVIN_ACP_COMMAND=/absolute/path/to/devin
-export HERMES_DEVIN_ACP_ARGS='acp'
+export HERMES_DEVIN_ACP_COMMAND=/absolute/path/to/devin   # or DEVIN_CLI_PATH
+export HERMES_DEVIN_ACP_ARGS='acp --cloud'                 # shell-split; default: acp
 ```
 
-Set `HERMES_HOME` if Hermes uses a non-default data directory. To install a
-specific provider release through the remote installer, set
-`HERMES_DEVIN_ACP_VERSION`, for example `v0.1.5`.
+`--model` is only appended when the arguments do not already carry `--model`
+or `--cloud`. Set `HERMES_HOME` if Hermes uses a non-default data directory and
+`HERMES_AGENT_ROOT` if the Hermes checkout is not at `$HERMES_HOME/hermes-agent`.
+To install a specific provider release through the remote installer, set
+`HERMES_DEVIN_ACP_VERSION`, for example `v0.2.0`.
 
 ## Update and uninstall
 
 Run the install command again to update. Remove only this provider with:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.1.5/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.2.0/uninstall.sh | bash
 ```
 
 ## Troubleshooting
@@ -88,23 +94,33 @@ curl -fsSL https://raw.githubusercontent.com/raffr85/hermes-devin-acp/v0.1.5/uni
 `PATH`.
 
 **`Devin CLI is not authenticated`** — run `devin auth login`, then retry.
+Hermes' provider setup reports the same login state from `devin auth status`.
 
-**`Hermes does not support external ACP providers`** — update Hermes Agent to a
-version whose `providers/base.py` includes the `external_command` profile field.
+**`predates the external_process provider contract` / `is older than v2026.9.24`**
+— run `hermes update`. If Hermes lives outside `$HERMES_HOME/hermes-agent`, set
+`HERMES_AGENT_ROOT` before installing.
+
+**`Please log in to use Devin` in a response** — the CLI session expired; run
+`devin auth login` again.
 
 **The provider is absent from `/model`** — restart Hermes after installation and
 verify that `HERMES_HOME` points to the same Hermes installation you run.
 
 ## How it works
 
-Hermes starts `devin acp` over stdio and adapts the ACP conversation to its
-normal chat transport. The plugin asks `devin models list` for the current model
-catalog. Authentication remains inside the official Devin CLI; this plugin does
-not read, copy, log, or publish Devin credentials.
+The plugin registers an `external_process` `ProviderProfile` named `devin-acp`
+(aliases `devin`, `devin-subscription`). Hermes' own stdio ACP client
+(`agent/copilot_acp_client.py`) starts `devin acp` over stdio and adapts the
+ACP conversation to its normal chat-completions transport; the plugin only adds
+the `--model` flag, `devin auth status` parsing for the setup screen, and the
+JSON model catalog. Authentication remains inside the official Devin CLI; this
+plugin does not read, copy, log, or publish Devin credentials.
 
 ## Security and billing
 
-ACP agents can execute tools. Review Hermes and Devin permission settings before
+ACP agents can execute tools: `devin acp` runs locally with your user's
+permissions and can read and modify files or run commands in the working
+directory Hermes hands it. Review Hermes and Devin permission settings before
 using the provider in repositories containing sensitive data. Devin usage may
 consume included quota or on-demand credits. See [SECURITY.md](SECURITY.md) for
 private vulnerability reporting.

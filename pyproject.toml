@@ -1,3 +1,6 @@
 [tool.ruff.lint]
 extend-select = ["I"]
 ignore = ["N999"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
